@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 
 # Data cleaning
@@ -21,6 +22,15 @@ import pandas as pd
 #   Transform 'Flase' -> 'False'
 
  
+def normalize(df):
+    data = df.copy()
+    for feature in df.columns:
+        max_val = df[feature].max()
+        min_val = df[feature].min()
+        data[feature] = (df[feature] - min_val) / (max_val - min_val)
+    return data
+
+
 def cleanData(data):                
     # y
     data = data[data.y.notna()]    
@@ -44,7 +54,13 @@ def cleanData(data):
     data['x12'].replace({f'{unique_labels_x12[2]}': f'{unique_labels_x12[1]}'}, inplace=True)                
     data['x12'].replace({f'{unique_labels_x12[0]}': 0, f'{unique_labels_x12[1]}': 1}, inplace=True)                        
     
-    X = data.iloc[:, 1:13].to_numpy()    
+    # normalize feature vectors
+    # normalized_features = normalize(data.iloc[:, 1:13])
+    normalizer = MinMaxScaler()
+    normalized_features = normalizer.fit_transform(data.iloc[:, 1:13])
+    
+    # X = normalized_features.to_numpy()    
+    X = normalized_features
     y = data['y'].to_numpy()    
 
     # print(data)

@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 
+
 # KNN of Unknown Data Point
 # To classify the unknown data point using the KNN (K-Nearest Neighbor) algorithm:
 #     Normalize the numeric data (check if necessary with sklearn)
@@ -9,9 +10,9 @@ from sklearn.neighbors import KNeighborsClassifier
 #     Classify the unknown data point based on the most instances of nearest k points
 
 
-def kNN(k, X_train, X_test, y_train):    
+def knn(X_train, X_test, y_train):    
     # initialize the model with parameter k
-    KNNClassifier = KNeighborsClassifier(n_neighbors=k)
+    KNNClassifier = KNeighborsClassifier(n_neighbors=20)
     # train the model with X_train datapoints and y_train data labels
     KNNClassifier.fit(X_train, y_train)
     # returns a classification of a X_test datapoints
