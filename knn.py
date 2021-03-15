@@ -8,12 +8,12 @@ from sklearn.neighbors import KNeighborsClassifier
 #     Sort the distance and find the nearest k data points
 #     Classify the unknown data point based on the most instances of nearest k points
 
-def kNN(k):
+
+def kNN(k, X_train, X_test, y_train):    
     # initialize the model with parameter k
     KNNClassifier = KNeighborsClassifier(n_neighbors=k)
     # train the model with X_train datapoints and y_train data labels
     KNNClassifier.fit(X_train, y_train)
     # returns a classification of a X_test datapoints
     labels = KNNClassifier.predict(X_test)
-    
     return labels
