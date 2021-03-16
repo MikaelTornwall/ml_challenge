@@ -3,7 +3,7 @@ import pandas as pd
 import random, math
 from sklearn.model_selection import KFold
 import data, knn, da, mlp, svm, ensemble
-
+from sklearn.decomposition import PCA
 
 #
 # Models to try (out-of-the-box results with scikit learn)
@@ -40,6 +40,16 @@ import data, knn, da, mlp, svm, ensemble
 #
 
 
+def write_file(labels):
+    f = open("labels.txt", "w")        
+    
+    for label in labels:
+        f.write(f'{label}\n')
+
+    f.close()
+
+
+
 def ten_fold_CV(X, y):
     cv = KFold(n_splits=10, shuffle=True)    
     return cv.split(X, y)
@@ -47,18 +57,24 @@ def ten_fold_CV(X, y):
 
 def train(X, y, splits, model, title):
     accuracies = []
+    stacked = []
 
     for train_i, test_i in splits:
         X_train, X_test = X[train_i], X[test_i]
         y_train, y_test = y[train_i], y[test_i]
 
-        labels = model(X_train, X_test, y_train)
-        correctly_labeled = np.array(np.where(y_test == labels))
-        accuracy = correctly_labeled[0].shape[0] / y_test.shape[0]
-        accuracies.append(accuracy)
+        # labels = model(X_train, X_test, y_train)
+        # correctly_labeled = np.array(np.where(y_test == labels))
+        # accuracy = correctly_labeled[0].shape[0] / y_test.shape[0]
+        # accuracies.append(accuracy)
 
-    accuracies = np.array(accuracies)
-    print(f'{title}: {np.mean(accuracies)}')
+        score = ensemble.stacking(X_train, X_test, y_train, y_test)
+        stacked.append(score)
+
+    # accuracies = np.array(accuracies)
+    # print(f'{title}: {np.mean(accuracies)}')
+    stacked = np.array(stacked)
+    print(f'stacking: {np.mean(stacked)}')
 
 
 def main():
@@ -75,21 +91,17 @@ def main():
     models = [knn.knn, da.lda, da.qda, svm.svm, ensemble.rfc, ensemble.adaboost]
     model_titles = ['20-NN', 'LDA', 'QDA', 'SVM', 'Random Forest', 'Adaboost']
 
-    for i in range(len(models)):
-        splits = ten_fold_CV(X, y)
-        train(X, y, splits, models[i], model_titles[i])
+    pca = PCA(n_components=X.shape[1])
+    pca.fit(X)
+    print(pca.explained_variance_ratio_)
 
-    # split = int(round(X.shape[0] * 0.8))
-    
-    # X_train = X[:split]
-    # X_test = X[split:]
-    # y_train = y[:split]
-    # y_test = y[split:]
+    # for i in range(len(models)):
+    #     splits = ten_fold_CV(X, y)
+    #     train(X, y, splits, models[i], model_titles[i])
 
-    # qda_labels = da.qda(X_train, X_test, y_train)
-    # qda_correctly_labeled = np.array(np.where(y_test == qda_labels))
-    # print("QDA:", qda_correctly_labeled[0].shape[0] / y_test.shape[0])    
-
+    X_eval = data.get_evaluation_data()
+    final_labels = ensemble.final_classifier(X, X_eval, y)
+    write_file(final_labels)
 
 if __name__ == "__main__":
     main()
