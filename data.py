@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.feature_selection import SelectKBest, f_classif
 
 # Data cleaning
 # - Delete rows where y is empty / irrelevant
@@ -21,15 +21,6 @@ from sklearn.preprocessing import MinMaxScaler
 # x12 - 2 unique real labels [True, False], then 'nan' and 'Flase'
 #   Transform 'Flase' -> 'False'
 
- 
-def normalize(df):
-    data = df.copy()
-    for feature in df.columns:
-        max_val = df[feature].max()
-        min_val = df[feature].min()
-        data[feature] = (df[feature] - min_val) / (max_val - min_val)
-    return data
-
 
 def cleanData(data):                
     # y
@@ -43,7 +34,7 @@ def cleanData(data):
     data = data[data.x1 < threshold]
     data = data[data.x1 > -threshold]       
 
-    # x6 -  change misspelled labels: 'Bayesian Interference' -> 'Bayesian Inference', drop rows with 'nan' value
+    # x6 -  change misspelled labels: 'Bayesian Interference' -> 'Bayesian Inference', drop rows with 'nan' value, encode the values
     unique_labels_x6 = pd.unique(data.x6)
     data = data[data.x6.notna()]
     data['x6'].replace({f'{unique_labels_x6[2]}': f'{unique_labels_x6[1]}'}, inplace=True)    
@@ -52,16 +43,28 @@ def cleanData(data):
     # x12 chage misspelled labels, 'Flase' -> 'False', encode the values: 
     unique_labels_x12 = pd.unique(data.x12) 
     data['x12'].replace({f'{unique_labels_x12[2]}': f'{unique_labels_x12[1]}'}, inplace=True)                
-    data['x12'].replace({f'{unique_labels_x12[0]}': 0, f'{unique_labels_x12[1]}': 1}, inplace=True)                        
+    data['x12'].replace({f'{unique_labels_x12[0]}': 1, f'{unique_labels_x12[1]}': 0}, inplace=True)                        
+    print(unique_labels_x12)
+
+    # drop column x3 and/or x12, clear improvement!
+    data.drop('x2', inplace=True, axis=1)
+    data.drop('x3', inplace=True, axis=1)
+    data.drop('x12', inplace=True, axis=1)
     
     # normalize feature vectors
-    # normalized_features = normalize(data.iloc[:, 1:13])
-    normalizer = MinMaxScaler()
-    normalized_features = normalizer.fit_transform(data.iloc[:, 1:13])
+    # normalizer = MinMaxScaler()
+    normalizer = StandardScaler()
     
-    # X = normalized_features.to_numpy()    
-    X = normalized_features
+    data.info()
+
+    rows, cols = data.shape
+    # X = normalizer.fit_transform(data.iloc[:, 1:cols])
+    X = normalizer.fit_transform(data.iloc[:, 1:cols])
+    print(X)
     y = data['y'].to_numpy()    
+    
+    # feature selection
+    # X = select_features(X, y)
 
     # print(data)
     # print(unique_labels_x6)
@@ -71,6 +74,14 @@ def cleanData(data):
     # data.info()
     
     return X, y
+
+
+# supervised feature selection
+# does not seem to enhance classification accuracy
+def select_features(X, y):
+    X_new = SelectKBest(f_classif, k=3).fit_transform(X, y)
+    print(X_new.shape)
+    return X_new
 
 
 def getData(filename):            
