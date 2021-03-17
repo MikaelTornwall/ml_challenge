@@ -13,32 +13,28 @@ def adaboost(X_train, X_test, y_train):
 
 
 def rfc(X_train, X_test, y_train):
-    # model = RandomForestClassifier(criterion='entropy', n_estimators=200, max_features='sqrt')
     model = RandomForestClassifier(criterion='entropy', n_estimators=200, max_features='sqrt')
     model.fit(X_train, y_train)
     labels = model.predict(X_test)
     return labels
 
 
-def stacking(X_train, X_test, y_train, y_test):
-    # Best so far
-    # classifiers = [('rf', RandomForestClassifier()), ('ab', AdaBoostClassifier(base_estimator=GaussianNB())), ('qda', QuadraticDiscriminantAnalysis())]
-    classifiers = [('rf', RandomForestClassifier(criterion='entropy', n_estimators=250, max_features='sqrt')), ('lda', LinearDiscriminantAnalysis()), ('qda', QuadraticDiscriminantAnalysis())] # best performer
-    # model = StackingClassifier(classifiers, final_estimator=LinearDiscriminantAnalysis(), cv=5)
-    # score = model.fit(X_train, y_train).score(X_test, y_test)
-    
-    # classifiers = [('rf', RandomForestClassifier(criterion='entropy', n_estimators=250, max_features='sqrt')), ('lda', LinearDiscriminantAnalysis()), ('qda', QuadraticDiscriminantAnalysis())]
-    # classifiers = [('rf', RandomForestClassifier()), ('knn', KNeighborsClassifier(10)), ('ab', AdaBoostClassifier(base_estimator=GaussianNB())), ('lda', LinearDiscriminantAnalysis()), ('qda', QuadraticDiscriminantAnalysis())]
-    # classifiers = [('rf', RandomForestClassifier()), ('ab', AdaBoostClassifier(base_estimator=GaussianNB())), ('qda', QuadraticDiscriminantAnalysis())]
-    # classifiers = [('rf', RandomForestClassifier()), ('ab', AdaBoostClassifier()), ('qda', QuadraticDiscriminantAnalysis())]
+def stacking(X_train, X_test, y_train, y_test):        
+    classifiers = [('qda', QuadraticDiscriminantAnalysis()), ('lda', LinearDiscriminantAnalysis()), ('rf', RandomForestClassifier(criterion='entropy', n_estimators=250, max_features='sqrt'))]    
     model = StackingClassifier(classifiers, final_estimator=LinearDiscriminantAnalysis(), cv=10)
     score = model.fit(X_train, y_train).score(X_test, y_test)
     return score
 
-# for final submission
-def final_classifier(X_train, X_test, y_train):
-    classifiers = [('rf', RandomForestClassifier(criterion='entropy', n_estimators=250, max_features='sqrt')), ('lda', LinearDiscriminantAnalysis()), ('qda', QuadraticDiscriminantAnalysis())] # best performer    
-    model = StackingClassifier(classifiers, final_estimator=LinearDiscriminantAnalysis(), cv=5)
+
+# ---------------------- for final submission ---------------------- 
+
+
+def final_classifier(X_train, X_test, y_train):    
+    classifiers = [('qda', QuadraticDiscriminantAnalysis()), ('lda', LinearDiscriminantAnalysis()), ('rf', RandomForestClassifier(criterion='entropy', n_estimators=250, max_features='sqrt'))]    
+    model = StackingClassifier(classifiers, final_estimator=LinearDiscriminantAnalysis(), cv=10)
     model.fit(X_train, y_train)
     labels = model.predict(X_test)
     return labels
+
+
+# -------------------------------------------------------------------
